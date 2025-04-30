@@ -24,38 +24,49 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchStations() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://www.brigadanews.ph/fmstreamv2/assets/stationList.json',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          stations =
-              data.map<Map<String, String>>((item) {
-                return {
-                  'title':
-                      '${item['frequency']} Brigada News FM ${item['stationName']}',
-                  'subtitle': item['location'] ?? '',
-                  'image':
-                      'https://brigadanews.ph/fmstreamv2/assets/stationLogo/${item['stationLogo']}.jpg',
-                };
-              }).toList();
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          hasError = true;
-        });
-      }
-    } catch (e) {
+  try {
+    final response = await http.get(
+      Uri.parse('https://www.brigadanews.ph/fmstreamv2/assets/stationList.json'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+
+      setState(() {
+        stations = data.map<Map<String, String>>((item) {
+          // Debug log the whole object
+          debugPrint('📦 Station: ${jsonEncode(item)}');
+
+          // Warn if shoutcastUrl is missing or empty
+          if (item['shoutcastUrl'] == null || item['shoutcastUrl'].toString().isEmpty) {
+            debugPrint('⚠️ Missing shoutcastUrl for: ${item['stationName']}');
+          }
+
+          return {
+            'title': '${item['frequency']} Brigada News FM ${item['stationName']}',
+            'subtitle': item['location'] ?? '',
+            'image': 'https://brigadanews.ph/fmstreamv2/assets/stationLogo/${item['stationLogo']}.jpg',
+            'stationName': item['stationName'] ?? '',
+            'stationLogo': item['stationLogo'] ?? '',
+            'frequency': item['frequency'] ?? '',
+            'shoutcastUrl': item['shoutcastUrl'] ?? '',
+            'location': item['location'] ?? '',
+          };
+        }).toList();
+        isLoading = false;
+      });
+    } else {
       setState(() {
         hasError = true;
       });
     }
+  } catch (e) {
+    debugPrint('❌ Exception: $e');
+    setState(() {
+      hasError = true;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
