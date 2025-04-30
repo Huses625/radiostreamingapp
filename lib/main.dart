@@ -1,7 +1,13 @@
+import 'package:flutter/services.dart';
 import 'package:brigada_radio_streaming/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(const BrigadaRadioApp());
 }
 
